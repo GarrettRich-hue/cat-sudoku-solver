@@ -41,11 +41,13 @@ class AssignedCNF{
         int emptyCount;
         int activeCount;
         vector<int> units;
+        void removeFromUnits(int clause);
     public:
         AssignedCNF(CNF &pncf);
         void assignValue(int variable, bool value);
         Trit literalInClause(int clause, int variable);
-        void unassignValue();
+        int unassignValue();
+        void unassignValueUntil(int variable);
         int getEmptyCount();
         bool getContainsEmpty();
         int getActiveCount();
@@ -56,6 +58,7 @@ class AssignedCNF{
         void satisfyUnit();
         int getUnitCount();
         void printAssignedCNF();
+        void printAssignment();
 };
 #include "CNF.cpp"
 #endif

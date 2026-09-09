@@ -60,8 +60,8 @@ Trit CNF::literalInClause(int clause, int variable){
 AssignedCNF::AssignedCNF(CNF &pcnf):
     assignment(pcnf.variableCount(), NONE),
     assignmentStack(pcnf.variableCount(), 0),
-    clauseSatisfiedBy(pcnf.variableCount(), -1),
-    clauseSize(pcnf.variableCount(), 0),
+    clauseSatisfiedBy(pcnf.clauseCount(), -1),
+    clauseSize(pcnf.clauseCount(), 0),
     units(0,0),
     cnf(pcnf)
 {
@@ -83,6 +83,14 @@ AssignedCNF::AssignedCNF(CNF &pcnf):
     }
     activeCount = cnf.clauseCount();
 }
+void AssignedCNF::removeFromUnits(int clause){
+    int unitInVec = 0;
+    while(unitInVec < units.size() && units[unitInVec] != clause){
+        unitInVec++;
+    }
+    assert(unitInVec < units.size());
+    units.erase(units.begin() + unitInVec);
+}
 void AssignedCNF::assignValue(int variable, bool value){
     Trit t = boolToTrit(value);
     assignment[variable] = t;
@@ -99,11 +107,15 @@ void AssignedCNF::assignValue(int variable, bool value){
         if(t == l){
             clauseSatisfiedBy[j] = variable;
             activeCount -= 1;
+            if(clauseSize[j] == 1){
+                removeFromUnits(j);
+            }
         }
         else{
             clauseSize[j] -= 1;
             if(clauseSize[j] == 0){
                 emptyCount += 1;
+                removeFromUnits(j);
             }
             else if(clauseSize[j] == 1){
                 units.push_back(j);
@@ -111,7 +123,13 @@ void AssignedCNF::assignValue(int variable, bool value){
         }
     }
 }
-void AssignedCNF::unassignValue(){
+void AssignedCNF::unassignValueUntil(int variable){
+    int v = -1;
+    while(v != variable){
+        v = unassignValue();
+    }
+}
+int AssignedCNF::unassignValue(){
     assert(stackTop >0);
     stackTop--;
     int variable = assignmentStack[stackTop]; 
@@ -121,21 +139,22 @@ void AssignedCNF::unassignValue(){
         if(clauseSatisfiedBy[i] == variable){ //if clause i was first satisfied by the variable we are now unassigning
             clauseSatisfiedBy[i] = -1; // unsatisfy the clause
             activeCount += 1; // add the new active clause to count
+            if(clauseSize[i] == 1){
+                units.push_back(i);
+            }
         }
-        else if(cnf.literalInClause(i, variable) != NONE){ //if the clause was not satisfied by the assignment, but its size got smaller by the assignment
+        else if(clauseSatisfiedBy[i] <0 && cnf.literalInClause(i, variable) != NONE){ //if the clause was not satisfied by the assignment, but its size got smaller by the assignment
             if(clauseSize[i] == 0){ // if the clause will become no longer empty by the reintroduction of the variable
                 emptyCount -= 1; // reduce the empty clause count
+                units.push_back(i);
             }
             else if(clauseSize[i] == 1){
-                int unitInVec = 0;
-                while(units[unitInVec] != i){
-                    unitInVec++;
-                }
-                units.erase(units.begin() + unitInVec);
+                removeFromUnits(i);
             }
             clauseSize[i] += 1; // increase the size as the variable has been reintroduced
         }
     }
+    return variable;
 }
 bool AssignedCNF::getContainsEmpty(){
     return emptyCount >0;
@@ -147,45 +166,71 @@ bool AssignedCNF::isTrueClause(int clause){
     assert(0 <= clause && clause < cnf.clauseCount());
     return clauseSatisfiedBy[clause] >= 0;
 }
+const string variableNames = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+string findVariableName(int j){
+    stringstream variableNameStream;
+    if(j < variableNames.length()){
+        variableNameStream << variableNames[j];
+    }
+    else{
+        variableNameStream << "p"<<j;
+    }
+    return variableNameStream.str();
+}
+void AssignedCNF::printAssignment(){
+    bool firstVariable = true;
+    for(int i=0;i<assignment.size();i++){
+        if(assignment[i] == NONE){
+            continue;
+        }
+        if(!firstVariable){
+            cout << ", ";
+        }
+        else{
+            firstVariable = false;
+        }
+        string variableName = findVariableName(i);
+        if(assignment[i] == TRUE){
+            cout << variableName;
+        }
+        else{
+            cout << "¬" << variableName;
+        }
+    }
+    cout << "\n";
+}
 void AssignedCNF::printAssignedCNF(){
-    const string variableNames = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     if(activeCount == 0){
         cout << "true\n";
         return;
     }
     for(int i=0;i<cnf.clauseCount();i++){
-        if(!isTrueClause(i)){
-            cout << "{";
-            bool firstLiteral = true;
-            for(int j=0;j<cnf.variableCount();j++){
-                if(assignment[j] != NONE){
-                    continue;
-                }
-                Trit lit = cnf.literalInClause(i,j);
-                if(lit == NONE){
-                    continue;
-                }
-                if(!firstLiteral){
-                    cout << ", ";
-                }
-                firstLiteral = false;
-                stringstream variableNameStream;
-                if(j < variableNames.length()){
-                    variableNameStream << variableNames[j];
-                }
-                else{
-                    variableNameStream << "p"<<j;
-                }
-                string variableName = variableNameStream.str();
-                if(lit == TRUE){ // if variable j appears in clause i as a positive literal
-                    cout << variableName; 
-                }
-                else if(lit == FALSE){
-                    cout << "¬" << variableName;
-                }
-            }
-            cout << "}, ";
+        if(isTrueClause(i)){
+            continue;
         }
+        cout << "{";
+        bool firstLiteral = true;
+        for(int j=0;j<cnf.variableCount();j++){
+            if(assignment[j] != NONE){
+                continue;
+            }
+            Trit lit = cnf.literalInClause(i,j);
+            if(lit == NONE){
+                continue;
+            }
+            if(!firstLiteral){
+                cout << ", ";
+            }
+            firstLiteral = false;
+            string variableName = findVariableName(j);
+            if(lit == TRUE){ // if variable j appears in clause i as a positive literal
+                cout << variableName; 
+            }
+            else if(lit == FALSE){
+                cout << "¬" << variableName;
+            }
+        }
+        cout << "}, ";
     }
     cout << "\n";
 }
@@ -210,12 +255,15 @@ Trit AssignedCNF::literalInClause(int clause, int variable){
 void AssignedCNF::satisfyUnit(){
     assert(units.size() > 0);
     int unit = units[units.size()-1];
-    units.pop_back();
+    assert(clauseSatisfiedBy[unit] < 0);
+    assert(clauseSize[unit] >0);
+    // find the variable in the unit
     int variable = -1;
     Trit sign = NONE;
     while(sign == NONE ||assignment[variable] != NONE){
         variable += 1;
         sign = cnf.literalInClause(unit, variable);
     }
+    // assign the unit a value that will satisfy it
     assignValue(variable, tritToBool(sign));
 }
