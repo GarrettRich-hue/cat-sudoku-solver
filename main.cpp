@@ -9,6 +9,8 @@ int main(){
     CNF cnf = cf.makeCNF();
     cout << cnf.variableCount() << "\n";
     AssignedCNF acnf = AssignedCNF(cnf);
+    acnf.assignValue(2, true);
+    acnf.unassignValue();
     acnf.printAssignedCNF();
     return 0;
 }

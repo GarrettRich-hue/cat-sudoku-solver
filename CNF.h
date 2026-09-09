@@ -8,6 +8,8 @@ enum Trit {
     FALSE,
     NONE
 };
+Trit boolToTrit(bool b);
+bool tritToBool(Trit t);
 class CNF{
     private:
         int varCount;
@@ -32,15 +34,20 @@ class AssignedCNF{
     private:
         CNF &cnf;
         vector<Trit> assignment;
-        vector<bool> clauseTrue;
+        vector<int> assignmentStack;
+        int stackTop;
+        vector<int> clauseSatisfiedBy;
         vector<int> clauseSize;
-        bool containsEmpty;
+        int emptyCount;
         int activeCount;
     public:
         AssignedCNF(CNF &pncf);
-        void assignValue(int variable, Trit value);
+        void assignValue(int variable, bool value);
+        void unassignValue();
+        int getEmptyCount();
         bool getContainsEmpty();
         int getActiveCount();
+        bool isTrueClause(int clause);
         void printAssignedCNF();
 };
 #include "CNF.cpp"
