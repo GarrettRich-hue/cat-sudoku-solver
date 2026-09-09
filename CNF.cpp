@@ -54,7 +54,7 @@ int CNF::clauseCount(){
     return clauses.size();
 }
 Trit CNF::literalInClause(int clause, int variable){
-    assert(0<= variable && variable < varCount);
+    assert(0<= variable && variable < varCount && 0 <= clause && clause < clauses.size());
     return clauses[clause][variable];
 }
 AssignedCNF::AssignedCNF(CNF &pcnf):
@@ -62,6 +62,7 @@ AssignedCNF::AssignedCNF(CNF &pcnf):
     assignmentStack(pcnf.variableCount(), 0),
     clauseSatisfiedBy(pcnf.variableCount(), -1),
     clauseSize(pcnf.variableCount(), 0),
+    units(0,0),
     cnf(pcnf)
 {
     stackTop = 0;
@@ -75,6 +76,9 @@ AssignedCNF::AssignedCNF(CNF &pcnf):
        }
        if(clauseSize[i] == 0){
            emptyCount += 1;
+       }
+       else if(clauseSize[i] == 1){
+           units.push_back(i);
        }
     }
     activeCount = cnf.clauseCount();
@@ -101,6 +105,9 @@ void AssignedCNF::assignValue(int variable, bool value){
             if(clauseSize[j] == 0){
                 emptyCount += 1;
             }
+            else if(clauseSize[j] == 1){
+                units.push_back(j);
+            }
         }
     }
 }
@@ -118,6 +125,13 @@ void AssignedCNF::unassignValue(){
         else if(cnf.literalInClause(i, variable) != NONE){ //if the clause was not satisfied by the assignment, but its size got smaller by the assignment
             if(clauseSize[i] == 0){ // if the clause will become no longer empty by the reintroduction of the variable
                 emptyCount -= 1; // reduce the empty clause count
+            }
+            else if(clauseSize[i] == 1){
+                int unitInVec = 0;
+                while(units[unitInVec] != i){
+                    unitInVec++;
+                }
+                units.erase(units.begin() + unitInVec);
             }
             clauseSize[i] += 1; // increase the size as the variable has been reintroduced
         }
@@ -175,5 +189,33 @@ void AssignedCNF::printAssignedCNF(){
     }
     cout << "\n";
 }
-
-
+Trit AssignedCNF::getAssignment(int variable){
+    return assignment[variable];
+}
+int AssignedCNF::getClauseSize(int clause){
+    return clauseSize[clause];
+}
+int AssignedCNF::clauseCount(){
+    return cnf.clauseCount();
+}
+int AssignedCNF::getEmptyCount(){
+    return emptyCount;
+}
+int AssignedCNF::getUnitCount(){
+    return units.size();
+}
+Trit AssignedCNF::literalInClause(int clause, int variable){
+    return cnf.literalInClause(clause, variable);
+}
+void AssignedCNF::satisfyUnit(){
+    assert(units.size() > 0);
+    int unit = units[units.size()-1];
+    units.pop_back();
+    int variable = -1;
+    Trit sign = NONE;
+    while(sign == NONE ||assignment[variable] != NONE){
+        variable += 1;
+        sign = cnf.literalInClause(unit, variable);
+    }
+    assignValue(variable, tritToBool(sign));
+}

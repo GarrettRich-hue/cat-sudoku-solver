@@ -40,14 +40,21 @@ class AssignedCNF{
         vector<int> clauseSize;
         int emptyCount;
         int activeCount;
+        vector<int> units;
     public:
         AssignedCNF(CNF &pncf);
         void assignValue(int variable, bool value);
+        Trit literalInClause(int clause, int variable);
         void unassignValue();
         int getEmptyCount();
         bool getContainsEmpty();
         int getActiveCount();
         bool isTrueClause(int clause);
+        Trit getAssignment(int variable);
+        int getClauseSize(int clause);
+        int clauseCount();
+        void satisfyUnit();
+        int getUnitCount();
         void printAssignedCNF();
 };
 #include "CNF.cpp"
