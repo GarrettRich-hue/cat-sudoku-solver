@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/garrett/Software-Projects/cat-sudoku-solver/build/cmake_install.cmake",
+		"/home/garrett/Software-Projects/cat-sudoku-solver/build/sat/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

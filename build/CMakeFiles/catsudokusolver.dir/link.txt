@@ -1,0 +1,1 @@
+/home/garrett/.nix-profile/bin/c++ -Wl,--dependency-file=CMakeFiles/catsudokusolver.dir/link.d CMakeFiles/catsudokusolver.dir/main.cpp.o -o catsudokusolver  sat/libsatlib.a

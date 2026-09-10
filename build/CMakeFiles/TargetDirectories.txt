@@ -1,0 +1,6 @@
+/home/garrett/Software-Projects/cat-sudoku-solver/build/CMakeFiles/catsudokusolver.dir
+/home/garrett/Software-Projects/cat-sudoku-solver/build/CMakeFiles/edit_cache.dir
+/home/garrett/Software-Projects/cat-sudoku-solver/build/CMakeFiles/rebuild_cache.dir
+/home/garrett/Software-Projects/cat-sudoku-solver/build/sat/CMakeFiles/satlib.dir
+/home/garrett/Software-Projects/cat-sudoku-solver/build/sat/CMakeFiles/edit_cache.dir
+/home/garrett/Software-Projects/cat-sudoku-solver/build/sat/CMakeFiles/rebuild_cache.dir

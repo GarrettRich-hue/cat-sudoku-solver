@@ -1,0 +1,2 @@
+/home/garrett/.nix-profile/bin/ar qc libsatlib.a CMakeFiles/satlib.dir/CNF.cpp.o CMakeFiles/satlib.dir/Solver.cpp.o CMakeFiles/satlib.dir/Formula.cpp.o
+/home/garrett/.nix-profile/bin/ranlib libsatlib.a
