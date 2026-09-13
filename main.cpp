@@ -1,5 +1,6 @@
 #include "CNF.h"
 #include "Solver.h"
+#include "Formula.h"
 #include <vector>
 #include <iostream>
 using namespace std;
@@ -21,5 +22,47 @@ int main(){
     cout << "Solved: "<< solvable << "\n";
     acnf.printAssignedCNF();
     acnf.printAssignment();
+    Formula* demorgans = new Not(new And(new Variable(0), new Not(new Variable(1))));
+    printFormula(demorgans);
+    {
+        NNFVisitor nnf;
+        demorgans->accept(&nnf);
+        demorgans = nnf.getResult();
+    }
+    printFormula(demorgans);
+    // ¬(A+B*(C+B+¬A)+D*B)
+    Formula* thingToExpand = new Not(
+            new And(new Variable(0), 
+                new And(
+                    new Or(new Variable(1),
+                        new And(
+                            new Variable(2),
+                        new And( 
+                            new Variable(1),
+                            new Not(new Variable(0))
+                            )
+                        )
+                        
+                    ),
+                    new Or(new Variable(3), new Variable(1))
+                )));
+    Formula* thingToExpandTest = copyFormula(thingToExpand);
+    cout << "Going to convert to CNF: \n";
+    printFormula(thingToExpand);
+    cout << "A copy of it: \n";
+    printFormula(thingToExpandTest);
+    {
+        NNFVisitor nnf;
+        thingToExpandTest->accept(&nnf);
+        thingToExpandTest = nnf.getResult();
+    }
+    cout << "Copy in negational normal form: \n";
+    printFormula(thingToExpandTest);
+    
+    ToCNFVisitor tcnfv;
+    thingToExpand->accept(&tcnfv);
+    thingToExpand = tcnfv.getResult();
+    cout << "As CNF: \n";
+    printFormula(thingToExpand);
     return 0;
 }
