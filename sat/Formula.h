@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <memory>
 
 class FormulaVisitor;
 class Formula;
@@ -50,13 +51,13 @@ class FormulaVisitor{
         virtual void visit(Or*){}; 
         virtual void visit(Not*){}; 
         virtual void visit(Variable*){}; 
-
 };
 class NNFVisitor: public FormulaVisitor{
     private:
         bool negating;
         Formula* formula;
     public:
+        static Formula* toNNF(Formula*);
         NNFVisitor();
         void visit(And*) override; 
         void visit(Or*) override; 
@@ -69,6 +70,7 @@ class FormulaStringifyVisitor: public FormulaVisitor{
     private:
         stringstream ss;
     public:
+        static Formula* toString(Formula*);
         FormulaStringifyVisitor();
         void visit(And*) override; 
         void visit(Or*) override; 
@@ -81,6 +83,7 @@ class ToCNFVisitor: public FormulaVisitor{
         Formula* formula;
         bool expanding; //true if children of the formula just about to be visited are already in cnf
     public:
+        static Formula* toCNF(Formula*);
         ToCNFVisitor();
         void visit(And*) override; 
         void visit(Or*) override; 
@@ -93,6 +96,7 @@ class FormulaCopyVisitor: public FormulaVisitor{
     private:
         Formula* formula;
     public:
+        static Formula* makeCopy(Formula*);
         FormulaCopyVisitor();
         void visit(And*) override; 
         void visit(Or*) override; 
@@ -101,4 +105,38 @@ class FormulaCopyVisitor: public FormulaVisitor{
         Formula* getResult();
 };
 Formula* copyFormula(Formula*);
+class CNFBuildVisitor: public FormulaVisitor{
+    private:
+        CNFFactory& cnffac;
+        vector<Trit> clause;
+        bool trueClause;
+        bool inOr;
+        bool inNot;
+    public:
+        static CNF buildCNF(int, Formula*);
+        CNFBuildVisitor(CNFFactory& cnffacp);
+        void visit(And*) override; 
+        void visit(Or*) override; 
+        void visit(Not*) override; 
+        void visit(Variable*) override; 
+};
+class FormulaFreeVisitor: public FormulaVisitor{
+    public:
+        static void freeFormula(Formula*);
+        FormulaFreeVisitor();
+        void visit(And*) override; 
+        void visit(Or*) override; 
+        void visit(Not*) override; 
+        void visit(Variable*) override; 
+};
+
+class ConjunctionFactory{
+    private:
+        Formula* building;
+        bool buildingEmpty;
+    public:
+        ConjunctionFactory();
+        void add(Formula*);
+        Formula* result();
+};
 #endif

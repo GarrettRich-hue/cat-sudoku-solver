@@ -39,6 +39,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/4.1.6/CMakeCCompiler.cmake"
   "CMakeFiles/4.1.6/CMakeCXXCompiler.cmake"
   "CMakeFiles/4.1.6/CMakeSystem.cmake"
+  "/home/garrett/Software-Projects/cat-sudoku-solver/cat/CMakeLists.txt"
   "/home/garrett/Software-Projects/cat-sudoku-solver/sat/CMakeLists.txt"
   )
 
@@ -52,10 +53,12 @@ set(CMAKE_MAKEFILE_OUTPUTS
 set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   "sat/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "cat/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/catsudokusolver.dir/DependInfo.cmake"
   "sat/CMakeFiles/satlib.dir/DependInfo.cmake"
+  "cat/CMakeFiles/catlib.dir/DependInfo.cmake"
   )

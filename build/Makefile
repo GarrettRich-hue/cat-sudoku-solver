@@ -149,6 +149,19 @@ satlib/fast:
 	$(MAKE) $(MAKESILENT) -f sat/CMakeFiles/satlib.dir/build.make sat/CMakeFiles/satlib.dir/build
 .PHONY : satlib/fast
 
+#=============================================================================
+# Target rules for targets named catlib
+
+# Build rule for target.
+catlib: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 catlib
+.PHONY : catlib
+
+# fast build rule for target.
+catlib/fast:
+	$(MAKE) $(MAKESILENT) -f cat/CMakeFiles/catlib.dir/build.make cat/CMakeFiles/catlib.dir/build
+.PHONY : catlib/fast
+
 main.o: main.cpp.o
 .PHONY : main.o
 
@@ -182,6 +195,7 @@ help:
 	@echo "... codegen"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... catlib"
 	@echo "... catsudokusolver"
 	@echo "... satlib"
 	@echo "... main.o"

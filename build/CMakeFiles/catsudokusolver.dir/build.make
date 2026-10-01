@@ -97,6 +97,8 @@ catsudokusolver: CMakeFiles/catsudokusolver.dir/main.cpp.o
 catsudokusolver: CMakeFiles/catsudokusolver.dir/build.make
 catsudokusolver: CMakeFiles/catsudokusolver.dir/compiler_depend.ts
 catsudokusolver: sat/libsatlib.a
+catsudokusolver: cat/libcatlib.a
+catsudokusolver: sat/libsatlib.a
 catsudokusolver: CMakeFiles/catsudokusolver.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/garrett/Software-Projects/cat-sudoku-solver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable catsudokusolver"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/catsudokusolver.dir/link.txt --verbose=$(VERBOSE)

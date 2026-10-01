@@ -1,6 +1,8 @@
 #include "Formula.h"
 #include "CNF.h"
 #include <sstream>
+#include <algorithm>
+#include <cassert>
 using namespace std;
 And::And(Formula* pLeft, Formula* pRight){
     left = pLeft;
@@ -31,6 +33,11 @@ void Variable::accept(FormulaVisitor* v){
     v->visit(this);
 }
 
+Formula* NNFVisitor::toNNF(Formula* form){
+    NNFVisitor nnf;
+    form->accept(&nnf);
+    return nnf.getResult();
+}
 void NNFVisitor::visit(And* land) {
     if(negating){
         Or* lor = new Or(land->left, land->right);
@@ -73,11 +80,13 @@ void NNFVisitor::visit(Or* lor) {
 }
 void NNFVisitor::visit(Not* lnot)  {
     Formula* body = lnot->body;
-    negating = !negating;
+    bool newNegating =!negating; 
+    negating = newNegating;
     body->accept(this);
     Formula* form = formula;
     delete lnot;
     formula= form;
+    negating = !newNegating;
 }
 void NNFVisitor::visit(Variable* variable)  {
     if(negating){
@@ -243,6 +252,12 @@ void ToCNFVisitor::visit(Or* lor){
 Formula* ToCNFVisitor::getResult(){
     return formula;
 }
+Formula* ToCNFVisitor::toCNF(Formula* form){
+    form = NNFVisitor::toNNF(form);
+    ToCNFVisitor tcnf;
+    form->accept(&tcnf);
+    return tcnf.getResult();
+}
 void printFormula(Formula* formula){
     FormulaStringifyVisitor fsv;
     formula->accept(&fsv);
@@ -277,4 +292,97 @@ Formula* copyFormula(Formula* formula){
     FormulaCopyVisitor fcv;
     formula->accept(&fcv);
     return fcv.getResult();
+}
+CNF CNFBuildVisitor::buildCNF(int maxVariables, Formula* form){
+    Formula* formCnf = ToCNFVisitor::toCNF(form);
+    CNFFactory fact(maxVariables);
+    CNFBuildVisitor cbv(fact);
+    formCnf->accept(&cbv);
+    return fact.makeCNF();
+}
+CNFBuildVisitor::CNFBuildVisitor(CNFFactory& cnffacp):
+    cnffac(cnffacp),
+    clause(0,NONE),
+    trueClause(true),
+    inOr(false),
+    inNot(false)
+{
+    clause.resize(cnffac.variableCount());
+    fill(clause.begin(), clause.end(), NONE);
+}
+void CNFBuildVisitor::visit(And* land){
+    assert(!inOr && !inNot);
+
+    // explore left
+    inOr = false;
+    inNot= false;
+    trueClause = false;
+    fill(clause.begin(), clause.end(), NONE);
+    land->left->accept(this);
+
+    //explore right
+    inOr = false;
+    inNot = false;
+    trueClause = false;
+    fill(clause.begin(), clause.end(), NONE);
+    land->right->accept(this);
+}
+void CNFBuildVisitor::visit(Or* lor){
+    bool topOr = !inOr;
+    assert(!inNot);
+    inNot = false;
+    inOr = true;
+    if(!trueClause) lor->left->accept(this);
+
+    inNot = false;
+    inOr = true;
+    if(!trueClause) lor->right->accept(this);
+
+    if(topOr && !trueClause){
+        cnffac.addClause(clause);
+    }
+}
+void CNFBuildVisitor::visit(Not* lnot){
+    inNot = true;
+    lnot->body->accept(this);
+}
+void CNFBuildVisitor::visit(Variable* variable){
+    Trit assignLiteral = boolToTrit(!inNot);
+    trueClause = trueClause || (clause[variable->variable] != NONE && clause[variable->variable] != assignLiteral);
+    clause[variable->variable] = assignLiteral;
+}
+FormulaFreeVisitor::FormulaFreeVisitor(){} 
+
+void FormulaFreeVisitor::visit(And* land){
+    land->left->accept(this);
+    land->right->accept(this);
+    delete land;
+}
+void FormulaFreeVisitor::visit(Or* lor){
+    lor->left->accept(this);
+    lor->right->accept(this);
+    delete lor;
+}
+void FormulaFreeVisitor::visit(Not* lnot){
+    lnot->body->accept(this);
+    delete lnot;
+}
+void FormulaFreeVisitor::visit(Variable* variable){
+    delete variable;
+}
+ConjunctionFactory::ConjunctionFactory(){
+    buildingEmpty = true;
+}
+void ConjunctionFactory::add(Formula* form){
+    if(buildingEmpty){
+        building = form;
+        buildingEmpty = false;
+    }
+    else{
+        building = new And(building, form);
+    }
+}
+Formula* ConjunctionFactory::result(){
+    assert(!buildingEmpty);
+    return building;
 }

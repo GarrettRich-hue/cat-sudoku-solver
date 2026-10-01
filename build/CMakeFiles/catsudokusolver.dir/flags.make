@@ -4,7 +4,7 @@
 # compile CXX with /home/garrett/.nix-profile/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/garrett/Software-Projects/cat-sudoku-solver/sat
+CXX_INCLUDES = -I/home/garrett/Software-Projects/cat-sudoku-solver/sat -I/home/garrett/Software-Projects/cat-sudoku-solver/cat
 
 CXX_FLAGS = -g
 
